@@ -1,11 +1,54 @@
 import io from "socket.io-client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 let socket;
 
 type Message = {
   author: string;
-  message: string;
+  message?: string;
+  file?: {
+    data: ArrayBuffer;
+    name: string;
+  };
+};
+
+const PreviewFile = ({
+  file,
+  fileName,
+}: {
+  file: ArrayBuffer;
+  fileName: string;
+}) => {
+  const [src, setSrc] = useState("");
+
+  useEffect(() => {
+    const blob = new Blob([file]);
+    const objectUrl = URL.createObjectURL(blob);
+    setSrc(objectUrl);
+
+    return () => {
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [file]);
+
+  return (
+    <div>
+      {file && <img src={src} style={{ width: "120px", height: "120px" }} />}
+      {file && (
+        <div className="flex justify-between items-center">
+          <a
+            href={src}
+            download={fileName}
+            className="block text-center"
+            style={{ width: "120px" }}
+          >
+            Download file
+          </a>
+          <div className="flex-1 text-right">{fileName}</div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default function Home() {
@@ -13,6 +56,8 @@ export default function Home() {
   const [chosenUsername, setChosenUsername] = useState("");
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Array<Message>>([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null); // Track selected file
+  const fileInputRef = useRef<HTMLInputElement>(null); // Ref to file input element
 
   useEffect(() => {
     socketInitializer();
@@ -27,19 +72,45 @@ export default function Home() {
     socket.on("newIncomingMessage", (msg) => {
       setMessages((currentMsg) => [
         ...currentMsg,
-        { author: msg.author, message: msg.message },
+        { author: msg.author, message: msg.message, file: msg.file },
       ]);
       console.log(messages);
     });
   };
 
   const sendMessage = async () => {
-    socket.emit("createdMessage", { author: chosenUsername, message });
-    setMessages((currentMsg) => [
-      ...currentMsg,
-      { author: chosenUsername, message },
-    ]);
-    setMessage("");
+    if (message || selectedFile) {
+      let fileData: ArrayBuffer | undefined;
+      let fileName: string | undefined;
+      if (selectedFile) {
+        const reader = new FileReader();
+        reader.readAsArrayBuffer(selectedFile);
+        fileName = selectedFile.name;
+        fileData = await new Promise((resolve) => {
+          reader.onload = () => {
+            resolve(reader.result as ArrayBuffer);
+          };
+        });
+      }
+      socket.emit("createdMessage", {
+        author: chosenUsername,
+        message,
+        file: {
+          data: fileData,
+          name: fileName,
+        },
+      });
+      setMessages((currentMsg) => [
+        ...currentMsg,
+        {
+          author: chosenUsername,
+          message,
+          file: { data: fileData, name: fileName },
+        },
+      ]);
+      setMessage("");
+      setSelectedFile(null);
+    }
   };
 
   const handleKeypress = (e) => {
@@ -48,6 +119,13 @@ export default function Home() {
       if (message) {
         sendMessage();
       }
+    }
+  };
+
+  const handleFileInputChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
     }
   };
 
@@ -89,11 +167,25 @@ export default function Home() {
                       key={i}
                     >
                       {msg.author} : {msg.message}
+                      {msg.file && (
+                        <PreviewFile
+                          file={msg.file.data}
+                          fileName={msg.file.name}
+                        />
+                      )}
                     </div>
                   );
                 })}
               </div>
               <div className="border-t border-gray-300 w-full flex rounded-bl-md">
+                <div className="border-l border-gray-300 flex justify-center items-center  rounded-br-md group hover:bg-purple-500 transition-all">
+                  <input
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.txt"
+                    ref={fileInputRef}
+                    onChange={handleFileInputChange}
+                  />
+                </div>
                 <input
                   type="text"
                   placeholder="New message..."

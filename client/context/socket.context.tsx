@@ -7,7 +7,12 @@ interface Context {
   socket: Socket;
   username?: string;
   setUsername: Function;
-  messages?: { message: string; time: string; username: string }[];
+  messages?: {
+    message: string;
+    files: Array<{ name; size; type; data }>;
+    time: string;
+    username: string;
+  }[];
   setMessages: Function;
   roomId?: string;
   rooms: object;
@@ -46,13 +51,19 @@ function SocketsProvider(props: any) {
   });
 
   useEffect(() => {
-    socket.on(EVENTS.SERVER.ROOM_MESSAGE, ({ message, username, time }) => {
-      if (!document.hasFocus()) {
-        document.title = "New message...";
-      }
+    socket.on(
+      EVENTS.SERVER.ROOM_MESSAGE,
+      ({ message, username, time, files }) => {
+        if (!document.hasFocus()) {
+          document.title = "New message...";
+        }
 
-      setMessages((messages) => [...messages, { message, username, time }]);
-    });
+        setMessages((messages) => [
+          ...messages,
+          { message, username, time, files },
+        ]);
+      }
+    );
   }, [socket]);
 
   return (

@@ -55,13 +55,14 @@ function socket({ io }: { io: Server }) {
 
     socket.on(
       EVENTS.CLIENT.SEND_ROOM_MESSAGE,
-      ({ roomId, message, username }) => {
+      ({ roomId, message, username, files }) => {
         const date = new Date();
-
+        console.log(files);
         socket.to(roomId).emit(EVENTS.SERVER.ROOM_MESSAGE, {
           message,
           username,
           time: `${date.getHours()}:${date.getMinutes()}`,
+          files,
         });
       }
     );

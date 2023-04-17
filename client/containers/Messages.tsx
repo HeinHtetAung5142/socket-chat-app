@@ -23,7 +23,7 @@ function MessagesContainer() {
       username,
       files: selectedFiles,
     });
-    console.log(selectedFiles);
+
     const date = new Date();
 
     setMessages([

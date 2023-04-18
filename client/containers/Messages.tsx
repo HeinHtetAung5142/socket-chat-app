@@ -96,10 +96,11 @@ function MessagesContainer() {
                       ) : (
                         <a
                           href={file.data}
-                          target="_blank"
+                          target={file.data}
+                          download
                           rel="noopener noreferrer"
                         >
-                          {file.name} ({file.type}, {file.size} bytes)
+                          {file.name}
                         </a>
                       )}
                     </div>

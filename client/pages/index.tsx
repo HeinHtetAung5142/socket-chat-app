@@ -18,8 +18,10 @@ export default function Home() {
     }
 
     setUsername(value);
-
     localStorage.setItem("username", value);
+
+    socket.auth = { username };
+    socket.connect();
   }
 
   useEffect(() => {

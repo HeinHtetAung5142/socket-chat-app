@@ -8,23 +8,41 @@ const EVENTS = {
     CREATE_ROOM: "CREATE_ROOM",
     SEND_ROOM_MESSAGE: "SEND_ROOM_MESSAGE",
     JOIN_ROOM: "JOIN_ROOM",
+    SEND_PRIVATE_MESSAGE: "SEND_PRIVATE_MESSAGE",
+    SHOW_CONNECTED_USERS: "SHOW_CONNECTED_USERS",
   },
   SERVER: {
     ROOMS: "ROOMS",
     JOINED_ROOM: "JOINED_ROOM",
     ROOM_MESSAGE: "ROOM_MESSAGE",
+    PRIVATE_MESSAGE: "PRIVATE_MESSAGE",
+    CONNECTED_USERS: "CONNECTED_USERS",
   },
 };
 
 const rooms: Record<string, { name: string }> = {};
+const users: Record<string, { username: string; socketId: string }> = {};
 
 function socket({ io }: { io: Server }) {
   logger.info(`Sockets enabled`);
 
   io.on(EVENTS.connection, (socket: Socket) => {
-    logger.info(`User connected ${socket.id}`);
+    logger.info(`User connected ${socket.data.username}`);
 
+    const users = [];
+    for (let [id, socket] of io.of("/").sockets) {
+      users.push({
+        userID: id,
+        username: socket.data.username,
+      });
+    }
+
+    socket.emit(EVENTS.SERVER.CONNECTED_USERS, users);
     socket.emit(EVENTS.SERVER.ROOMS, rooms);
+    socket.broadcast.emit("user connected", {
+      userID: socket.id,
+      username: socket.data.username,
+    });
 
     /*
      * When a user creates a new room
@@ -66,6 +84,14 @@ function socket({ io }: { io: Server }) {
         });
       }
     );
+
+    socket.on(EVENTS.CLIENT.SEND_PRIVATE_MESSAGE, ({ message, to }) => {
+      socket.to(to).emit(EVENTS.SERVER.PRIVATE_MESSAGE, {
+        message,
+        from: socket.id,
+        time: new Date(),
+      });
+    });
 
     /*
      * When a user joins a room

@@ -2,6 +2,10 @@ import { nanoid } from "nanoid";
 import { Server, Socket } from "socket.io";
 import logger from "./utils/logger";
 
+interface CustomSocket extends Socket {
+  username?: string;
+}
+
 const EVENTS = {
   connection: "connection",
   CLIENT: {
@@ -9,7 +13,6 @@ const EVENTS = {
     SEND_ROOM_MESSAGE: "SEND_ROOM_MESSAGE",
     JOIN_ROOM: "JOIN_ROOM",
     SEND_PRIVATE_MESSAGE: "SEND_PRIVATE_MESSAGE",
-    SHOW_CONNECTED_USERS: "SHOW_CONNECTED_USERS",
   },
   SERVER: {
     ROOMS: "ROOMS",
@@ -26,14 +29,25 @@ const users: Record<string, { username: string; socketId: string }> = {};
 function socket({ io }: { io: Server }) {
   logger.info(`Sockets enabled`);
 
-  io.on(EVENTS.connection, (socket: Socket) => {
-    logger.info(`User connected ${socket.data.username}`);
+  io.use((socket: CustomSocket, next) => {
+    const username = socket.handshake.auth.username;
 
-    const users = [];
+    if (!username) {
+      return next(new Error("invalid username"));
+    }
+    socket.username = username;
+    next();
+  });
+
+  io.on(EVENTS.connection, (socket: CustomSocket) => {
+    logger.info(`User connected ${socket.id}`);
+    logger.info(`User connected ${socket.username}`);
+
+    const usersList = [];
     for (let [id, socket] of io.of("/").sockets) {
-      users.push({
+      usersList.push({
         userID: id,
-        username: socket.data.username,
+        username: (socket as CustomSocket).username,
       });
     }
 
@@ -41,7 +55,7 @@ function socket({ io }: { io: Server }) {
     socket.emit(EVENTS.SERVER.ROOMS, rooms);
     socket.broadcast.emit("user connected", {
       userID: socket.id,
-      username: socket.data.username,
+      username: socket.username,
     });
 
     /*

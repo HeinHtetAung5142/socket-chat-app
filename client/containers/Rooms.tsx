@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import EVENTS from "../config/events";
 import { useSockets } from "../context/socket.context";
 import styles from "../styles/Room.module.css";
@@ -6,23 +6,18 @@ import styles from "../styles/Room.module.css";
 function RoomsContainer() {
   const { socket, roomId, rooms } = useSockets();
   const newRoomRef = useRef(null);
-  const userList = [];
+  // const [usersData, setUsersData] = useState([]);
   const usersData = [
     { userID: "1", username: "u1" },
     { userID: "2", username: "u2" },
     { userID: "3", username: "u3" },
   ];
 
-  socket.on(EVENTS.CLIENT.SHOW_CONNECTED_USERS, (users) => {
-    console.log(users);
-
-    users.forEach((user) => {
-      user.self = user.userID === socket.id;
-      userList.push(user);
-    });
-  });
-
-  console.log(userList);
+  // useEffect(() => {
+  //   socket.on(EVENTS.CLIENT.SHOW_CONNECTED_USERS, (users) => {
+  //     setUsersData(users);
+  //   });
+  // }, [socket]);
 
   function handleCreateRoom() {
     //get the room name

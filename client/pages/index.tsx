@@ -17,11 +17,11 @@ export default function Home() {
       return;
     }
 
+    socket.auth = { username: value };
+    socket.connect();
+
     setUsername(value);
     localStorage.setItem("username", value);
-
-    socket.auth = { username };
-    socket.connect();
   }
 
   useEffect(() => {

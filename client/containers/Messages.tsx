@@ -10,6 +10,35 @@ function MessagesContainer() {
   const messageEndRef = useRef(null);
   const [selectedFiles, setSelectedFiles] = useState([]);
 
+  function handleSendPrivateMessage() {
+    const message = newMessageRef.current.value;
+
+    if (!String(message).trim() && selectedFiles.length === 0) {
+      return;
+    }
+
+    socket.emit(EVENTS.CLIENT.SEND_PRIVATE_MESSAGE, {
+      message,
+      to: roomId,
+      files: selectedFiles,
+    });
+
+    const date = new Date();
+
+    setMessages([
+      ...messages,
+      {
+        username: "You",
+        message,
+        time: `${date.getHours()}:${date.getMinutes()}`,
+        files: selectedFiles,
+      },
+    ]);
+
+    newMessageRef.current.value = "";
+    setSelectedFiles([]);
+  }
+
   function handleSendMessage() {
     const message = newMessageRef.current.value;
 

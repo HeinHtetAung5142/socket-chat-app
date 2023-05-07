@@ -51,7 +51,7 @@ function socket({ io }: { io: Server }) {
       });
     }
 
-    socket.emit(EVENTS.SERVER.CONNECTED_USERS, users);
+    socket.emit(EVENTS.SERVER.CONNECTED_USERS, usersList);
     socket.emit(EVENTS.SERVER.ROOMS, rooms);
     socket.broadcast.emit("user connected", {
       userID: socket.id,
@@ -99,11 +99,14 @@ function socket({ io }: { io: Server }) {
       }
     );
 
-    socket.on(EVENTS.CLIENT.SEND_PRIVATE_MESSAGE, ({ message, to }) => {
+    socket.on(EVENTS.CLIENT.SEND_PRIVATE_MESSAGE, ({ message, to, files }) => {
+      const date = new Date();
+
       socket.to(to).emit(EVENTS.SERVER.PRIVATE_MESSAGE, {
         message,
         from: socket.id,
-        time: new Date(),
+        time: `${date.getHours()}:${date.getMinutes()}`,
+        files,
       });
     });
 

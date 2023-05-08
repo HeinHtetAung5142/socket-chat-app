@@ -7,23 +7,49 @@ function RoomsContainer() {
   const { socket, roomId, rooms } = useSockets();
   const newRoomRef = useRef(null);
   const [usersData, setUsersData] = useState([]);
-  // const usersData = [
-  //   { userID: "1", username: "u1" },
-  //   { userID: "2", username: "u2" },
-  //   { userID: "3", username: "u3" },
-  // ];
+  const [currentUser, setCurrentUser] = useState(null);
 
-  socket.on(EVENTS.SERVER.CONNECTED_USERS, (usersList) => {
-    const usersArr = [];
-    usersList.forEach((user) => {
-      // skip current user, push the rest to usersArr
+  useEffect(() => {
+    // Update usersData state with the list of connected users
+    function updateConnectedUsers(usersList) {
+      const usersArr = [];
+      usersList.forEach((user) => {
+        // skip current user, push the rest to usersArr
+        if (user.userID !== socket.id) {
+          usersArr.push(user);
+        } else {
+          setCurrentUser(user);
+        }
+      });
+      setUsersData(usersArr);
+    }
+
+    // Update usersData state when a new user is connected
+    function handleUserConnect(user) {
       if (user.userID !== socket.id) {
-        usersArr.push(user);
+        setUsersData((prevUsersData) => [...prevUsersData, user]);
       }
-    });
-    console.log(usersList);
-    setUsersData(usersList);
-  });
+    }
+
+    // Update usersData state when a user is disconnected
+    function handleUserDisconnect(userID) {
+      setUsersData((prevUsersData) =>
+        prevUsersData.filter((user) => user.userID !== userID)
+      );
+    }
+
+    // Listen for changes in the socket connection
+    socket.on(EVENTS.SERVER.CONNECTED_USERS, updateConnectedUsers);
+    socket.on("user connected", handleUserConnect);
+    socket.on("user disconnected", handleUserDisconnect);
+
+    // Remove the event listeners when the component unmounts
+    return () => {
+      socket.off(EVENTS.SERVER.CONNECTED_USERS, updateConnectedUsers);
+      socket.off("user connected", handleUserConnect);
+      socket.off("user disconnected", handleUserDisconnect);
+    };
+  }, [socket]);
 
   function handleCreateRoom() {
     //get the room name
@@ -48,6 +74,9 @@ function RoomsContainer() {
 
   return (
     <nav className={styles.wrapper}>
+      <div className={styles.createRoomWrapper}>
+        {currentUser?.username}: {socket.id}
+      </div>
       <div className={styles.createRoomWrapper}>
         <input ref={newRoomRef} placeholder="Room name" />
         <button className="cta" onClick={handleCreateRoom}>

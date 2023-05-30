@@ -9,9 +9,10 @@ interface Context {
   setUsername: Function;
   messages?: {
     message: string;
-    files: Array<{ name; size; type; data }>;
+    files: Array<{ name: string; size: number; type: string; data: string }>;
     time: string;
     username: string;
+    recipient?: any;
   }[];
   setMessages: Function;
   roomId?: string;
@@ -46,21 +47,34 @@ function SocketsProvider(props: any) {
 
   socket.on(EVENTS.SERVER.JOINED_ROOM, (value) => {
     setRoomId(value);
-
     setMessages([]);
   });
 
   useEffect(() => {
     socket.on(
       EVENTS.SERVER.ROOM_MESSAGE,
-      ({ message, username, time, files }) => {
+      ({ message, username, time, files, recipient }) => {
         if (!document.hasFocus()) {
           document.title = "New message...";
         }
 
         setMessages((messages) => [
           ...messages,
-          { message, username, time, files },
+          { message, username, time, files, recipient },
+        ]);
+      }
+    );
+
+    socket.on(
+      EVENTS.SERVER.PRIVATE_MESSAGE,
+      ({ message, username, time, files, sender }) => {
+        if (!document.hasFocus()) {
+          document.title = "New message...";
+        }
+
+        setMessages((messages) => [
+          ...messages,
+          { message, username, time, files, recipient: sender },
         ]);
       }
     );

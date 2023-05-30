@@ -24,7 +24,6 @@ const EVENTS = {
 };
 
 const rooms: Record<string, { name: string }> = {};
-const users: Record<string, { username: string; socketId: string }> = {};
 
 function socket({ io }: { io: Server }) {
   logger.info(`Sockets enabled`);

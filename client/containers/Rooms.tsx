@@ -3,11 +3,12 @@ import EVENTS from "../config/events";
 import { useSockets } from "../context/socket.context";
 import styles from "../styles/Room.module.css";
 
-function RoomsContainer() {
+function RoomsContainer({ setSelectedUser }) {
   const { socket, roomId, rooms } = useSockets();
   const newRoomRef = useRef(null);
   const [usersData, setUsersData] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
+  const [privateRoomId, setPrivateRoomId] = useState<string | null>(null);
 
   useEffect(() => {
     // Update usersData state with the list of connected users
@@ -38,6 +39,17 @@ function RoomsContainer() {
       );
     }
 
+    function handleRoomMessage(data: any) {
+      console.log("Room message received", data);
+    }
+
+    function handlePrivateMessage(data: any) {
+      console.log("Private message received", data);
+    }
+
+    socket.on(EVENTS.SERVER.ROOM_MESSAGE, handleRoomMessage);
+    socket.on(EVENTS.SERVER.PRIVATE_MESSAGE, handlePrivateMessage);
+
     // Listen for changes in the socket connection
     socket.on(EVENTS.SERVER.CONNECTED_USERS, updateConnectedUsers);
     socket.on("user connected", handleUserConnect);
@@ -46,6 +58,8 @@ function RoomsContainer() {
     // Remove the event listeners when the component unmounts
     return () => {
       socket.off(EVENTS.SERVER.CONNECTED_USERS, updateConnectedUsers);
+      socket.off(EVENTS.SERVER.ROOM_MESSAGE, handleRoomMessage);
+      socket.off(EVENTS.SERVER.PRIVATE_MESSAGE, handlePrivateMessage);
       socket.off("user connected", handleUserConnect);
       socket.off("user disconnected", handleUserDisconnect);
     };
@@ -70,6 +84,25 @@ function RoomsContainer() {
     console.log(key);
 
     socket.emit(EVENTS.CLIENT.JOIN_ROOM, key);
+
+    // unset private room id
+    setPrivateRoomId(null);
+  }
+
+  function handleJoinPrivateRoom(user: any) {
+    setSelectedUser(user);
+    if (user.userID === roomId || user.userID === socket.id) return;
+
+    const roomID = `${socket.id}-${user.userID}`;
+
+    // create private room
+    rooms[roomID] = { name: `${currentUser.username}-${user.username}` };
+
+    // emit join room event for the selected user
+    socket.emit(EVENTS.CLIENT.JOIN_ROOM, roomID);
+
+    // set the private room id
+    setPrivateRoomId(roomID);
   }
 
   return (
@@ -107,7 +140,7 @@ function RoomsContainer() {
                 <button
                   disabled={user.userID === roomId}
                   title={`Join ${user.username}`}
-                  onClick={() => handleJoinRoom(user.userID)}
+                  onClick={() => handleJoinPrivateRoom(user)}
                 >
                   {user.username}
                 </button>

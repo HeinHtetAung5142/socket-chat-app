@@ -4,56 +4,49 @@ import EVENTS from "../config/events";
 import { useSockets } from "../context/socket.context";
 import styles from "../styles/Messages.module.css";
 
-function MessagesContainer() {
+function MessagesContainer({ selectedUser }) {
   const { socket, messages, roomId, username, setMessages } = useSockets();
   const newMessageRef = useRef(null);
   const messageEndRef = useRef(null);
   const [selectedFiles, setSelectedFiles] = useState([]);
-
-  function handleSendPrivateMessage() {
-    const message = newMessageRef.current.value;
-
-    if (!String(message).trim() && selectedFiles.length === 0) {
-      return;
-    }
-
-    socket.emit(EVENTS.CLIENT.SEND_PRIVATE_MESSAGE, {
-      message,
-      to: roomId,
-      files: selectedFiles,
-    });
-
-    const date = new Date();
-
-    setMessages([
-      ...messages,
-      {
-        username: "You",
-        message,
-        time: `${date.getHours()}:${date.getMinutes()}`,
-        files: selectedFiles,
-      },
-    ]);
-
-    newMessageRef.current.value = "";
-    setSelectedFiles([]);
-  }
+  const [privateMessages, setPrivateMessages] = useState([]);
 
   function handleSendMessage() {
     const message = newMessageRef.current.value;
+    const date = new Date();
 
     if (!String(message).trim() && selectedFiles.length === 0) {
       return;
     }
 
-    socket.emit(EVENTS.CLIENT.SEND_ROOM_MESSAGE, {
-      roomId,
-      message,
-      username,
-      files: selectedFiles,
-    });
+    if (selectedUser) {
+      socket.emit(EVENTS.CLIENT.SEND_PRIVATE_MESSAGE, {
+        recipient: selectedUser.userID,
+        message,
+        username,
+        files: selectedFiles,
+      });
+    } else {
+      socket.emit(EVENTS.CLIENT.SEND_ROOM_MESSAGE, {
+        roomId,
+        message,
+        username,
+        files: selectedFiles,
+      });
+    }
 
-    const date = new Date();
+    if (selectedUser) {
+      setPrivateMessages([
+        ...privateMessages,
+        {
+          username: "You",
+          message,
+          time: `${date.getHours()}:${date.getMinutes()}`,
+          files: selectedFiles,
+          recipient: selectedUser,
+        },
+      ]);
+    }
 
     setMessages([
       ...messages,
@@ -105,39 +98,69 @@ function MessagesContainer() {
   return (
     <div className={styles.wrapper}>
       <div className={styles.messageList}>
-        {messages.map(({ message, username, time, files }, index) => {
-          return (
-            <div key={index} className={styles.message}>
-              <div key={index} className={styles.messageInner}>
-                <span className={styles.messageSender}>
-                  {username} - {time}
-                </span>
-                <span className={styles.messageBody}>{message}</span>
-                {files &&
-                  files.map((file, index) => (
-                    <div key={index}>
-                      {file.type.includes("image/") ? (
-                        <img
-                          src={file.data}
-                          alt={file.name}
-                          style={{ width: "120px", height: "120px" }}
-                        />
-                      ) : (
-                        <a
-                          href={file.data}
-                          target={file.data}
-                          download
-                          rel="noopener noreferrer"
-                        >
-                          {file.name}
-                        </a>
-                      )}
-                    </div>
-                  ))}
+        {selectedUser
+          ? privateMessages.map(({ message, username, time, files }, index) => (
+              <div key={index} className={styles.message}>
+                <div key={index} className={styles.messageInner}>
+                  <span className={styles.messageSender}>
+                    {username} - {time}
+                  </span>
+                  <span className={styles.messageBody}>{message}</span>
+                  {files &&
+                    files.map((file, index) => (
+                      <div key={index}>
+                        {file.type.includes("image/") ? (
+                          <img
+                            src={file.data}
+                            alt={file.name}
+                            style={{ width: "120px", height: "120px" }}
+                          />
+                        ) : (
+                          <a
+                            href={file.data}
+                            target={file.data}
+                            download
+                            rel="noopener noreferrer"
+                          >
+                            {file.name}
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            ))
+          : messages.map(({ message, username, time, files }, index) => (
+              <div key={index} className={styles.message}>
+                <div key={index} className={styles.messageInner}>
+                  <span className={styles.messageSender}>
+                    {username} - {time}
+                  </span>
+                  <span className={styles.messageBody}>{message}</span>
+                  {files &&
+                    files.map((file, index) => (
+                      <div key={index}>
+                        {file.type.includes("image/") ? (
+                          <img
+                            src={file.data}
+                            alt={file.name}
+                            style={{ width: "120px", height: "120px" }}
+                          />
+                        ) : (
+                          <a
+                            href={file.data}
+                            target={file.data}
+                            download
+                            rel="noopener noreferrer"
+                          >
+                            {file.name}
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              </div>
+            ))}
         <div ref={messageEndRef} />
       </div>
       <div className={styles.messageBox}>

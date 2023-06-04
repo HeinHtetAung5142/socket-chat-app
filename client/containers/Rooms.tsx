@@ -110,42 +110,49 @@ function RoomsContainer({ setSelectedUser }) {
         </button>
       </div>
 
-      <ul className={styles.roomList}>
-        {Object.keys(rooms).map((key) => {
-          return (
-            <div key={key}>
-              <button
-                disabled={key === roomId}
-                title={`Join ${rooms[key].name}`}
-                onClick={() => handleJoinRoom(key)}
-              >
-                {rooms[key].name}
-              </button>
-            </div>
-          );
-        })}
-      </ul>
-      <ul className={styles.roomList}>
-        {usersData &&
-          usersData.map((user) => {
-            for (const key in rooms) {
-              if (rooms[key].name === user.username) {
-                return null;
-              }
-            }
+      {Object.keys(rooms).length > 0 && (
+        <ul className={styles.roomList}>
+          <div className={styles.createRoomWrapper}>Rooms:</div>
+          {Object.keys(rooms).map((key) => {
             return (
-              <div key={user.userID}>
+              <div key={key}>
                 <button
-                  disabled={user.userID === roomId}
-                  title={`Join ${user.username}`}
-                  onClick={() => handleJoinPrivateRoom(user)}
+                  disabled={key === roomId}
+                  title={`Join ${rooms[key].name}`}
+                  onClick={() => handleJoinRoom(key)}
                 >
-                  {user.username}
+                  {rooms[key].name}
                 </button>
               </div>
             );
           })}
-      </ul>
+        </ul>
+      )}
+
+      {usersData.length > 0 && (
+        <ul className={styles.roomList}>
+          <div className={styles.createRoomWrapper}>Users:</div>
+          {usersData &&
+            usersData.map((user) => {
+              for (const key in rooms) {
+                if (rooms[key].name === user.username) {
+                  return null;
+                }
+              }
+              return (
+                <div key={user.userID}>
+                  <button
+                    disabled={user.userID === roomId}
+                    title={`Join ${user.username}`}
+                    onClick={() => handleJoinPrivateRoom(user)}
+                  >
+                    {user.username}
+                  </button>
+                </div>
+              );
+            })}
+        </ul>
+      )}
     </nav>
   );
 }

@@ -64,6 +64,16 @@ function RoomsContainer({ setSelectedUser }) {
     };
   }, [socket]);
 
+  useEffect(() => {
+    socket.on("NewPrivateRoom", (roomID, roomName) => {
+      // create private room
+      rooms[roomID] = { name: roomName };
+
+      // emit join room event for the selected user
+      socket.emit(EVENTS.CLIENT.JOIN_ROOM, roomID);
+    });
+  }, [roomId, rooms, socket]);
+
   function handleCreateRoom() {
     //get the room name
     const roomName = newRoomRef.current.value || "";
@@ -85,7 +95,7 @@ function RoomsContainer({ setSelectedUser }) {
     socket.emit(EVENTS.CLIENT.JOIN_ROOM, key);
   }
 
-  function handleJoinPrivateRoom(user: any) {
+  function handleJoinPrivateRoom(user: any, owner: any) {
     setSelectedUser(user);
     if (user.userID === roomId || user.userID === socket.id) return;
     const userIDS = [socket.id, user.userID].sort();
@@ -95,7 +105,7 @@ function RoomsContainer({ setSelectedUser }) {
     rooms[roomID] = { name: user.username };
 
     // emit join room event for the selected user
-    socket.emit(EVENTS.CLIENT.JOIN_ROOM, roomID);
+    socket.emit(EVENTS.CLIENT.JOIN_ROOM, roomID, user.userID, owner.username);
   }
 
   return (
@@ -110,30 +120,30 @@ function RoomsContainer({ setSelectedUser }) {
         </button>
       </div>
 
-      {Object.keys(rooms).length > 0 && (
-        <ul className={styles.roomList}>
-          <div className={styles.createRoomWrapper}>Rooms:</div>
-          {Object.keys(rooms).map((key) => {
-            return (
-              <div key={key}>
-                <button
-                  disabled={key === roomId}
-                  title={`Join ${rooms[key].name}`}
-                  onClick={() => handleJoinRoom(key)}
-                >
-                  {rooms[key].name}
-                </button>
-              </div>
-            );
-          })}
-        </ul>
-      )}
+      <div>
+        {Object.keys(rooms).length > 0 && (
+          <ul className={styles.roomList}>
+            {Object.keys(rooms).map((key) => {
+              return (
+                <div key={key}>
+                  <button
+                    disabled={key === roomId}
+                    title={`Join ${rooms[key].name}`}
+                    onClick={() => handleJoinRoom(key)}
+                  >
+                    {rooms[key].name}
+                  </button>
+                </div>
+              );
+            })}
+          </ul>
+        )}
+      </div>
 
-      {usersData.length > 0 && (
-        <ul className={styles.roomList}>
-          <div className={styles.createRoomWrapper}>Users:</div>
-          {usersData &&
-            usersData.map((user) => {
+      <div>
+        {usersData.length > 0 && (
+          <ul className={styles.roomList}>
+            {usersData.map((user) => {
               for (const key in rooms) {
                 if (rooms[key].name === user.username) {
                   return null;
@@ -144,15 +154,16 @@ function RoomsContainer({ setSelectedUser }) {
                   <button
                     disabled={user.userID === roomId}
                     title={`Join ${user.username}`}
-                    onClick={() => handleJoinPrivateRoom(user)}
+                    onClick={() => handleJoinPrivateRoom(user, currentUser)}
                   >
                     {user.username}
                   </button>
                 </div>
               );
             })}
-        </ul>
-      )}
+          </ul>
+        )}
+      </div>
     </nav>
   );
 }

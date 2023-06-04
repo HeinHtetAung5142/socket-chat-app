@@ -82,7 +82,6 @@ function socket({ io }: { io: Server }) {
     /*
      * When a user sends a room message
      */
-
     socket.on(
       EVENTS.CLIENT.SEND_ROOM_MESSAGE,
       ({ roomId, message, username, files }) => {
@@ -118,10 +117,13 @@ function socket({ io }: { io: Server }) {
     /*
      * When a user joins a room
      */
-    socket.on(EVENTS.CLIENT.JOIN_ROOM, (roomId) => {
+    socket.on(EVENTS.CLIENT.JOIN_ROOM, (roomId, userID, roomName) => {
       socket.join(roomId);
 
       socket.emit(EVENTS.SERVER.JOINED_ROOM, roomId);
+
+      if (userID === undefined) return;
+      socket.to(userID).emit("NewPrivateRoom", roomId, roomName);
     });
   });
 }

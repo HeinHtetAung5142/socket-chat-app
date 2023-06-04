@@ -9,7 +9,6 @@ function MessagesContainer({ selectedUser }) {
   const newMessageRef = useRef(null);
   const messageEndRef = useRef(null);
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const [privateMessages, setPrivateMessages] = useState([]);
 
   function handleSendMessage() {
     const message = newMessageRef.current.value;
@@ -36,19 +35,6 @@ function MessagesContainer({ selectedUser }) {
       });
     }
 
-    if (selectedUser) {
-      setPrivateMessages([
-        ...privateMessages,
-        {
-          username: "You",
-          message,
-          time: `${date.getHours()}:${date.getMinutes()}`,
-          files: selectedFiles,
-          to: selectedUser,
-        },
-      ]);
-    }
-
     setMessages([
       ...messages,
       {
@@ -56,6 +42,7 @@ function MessagesContainer({ selectedUser }) {
         message,
         time: `${date.getHours()}:${date.getMinutes()}`,
         files: selectedFiles,
+        to: selectedUser?.userID,
       },
     ]);
 
@@ -90,9 +77,7 @@ function MessagesContainer({ selectedUser }) {
 
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    console.log(privateMessages);
-    console.log(messages);
-  }, [messages, privateMessages]);
+  }, [messages]);
 
   if (!roomId) {
     return <div />;
@@ -101,69 +86,37 @@ function MessagesContainer({ selectedUser }) {
   return (
     <div className={styles.wrapper}>
       <div className={styles.messageList}>
-        {selectedUser
-          ? privateMessages.map(({ message, username, time, files }, index) => (
-              <div key={index} className={styles.message}>
-                <div key={index} className={styles.messageInner}>
-                  <span className={styles.messageSender}>
-                    {username} - {time}
-                  </span>
-                  <span className={styles.messageBody}>{message}</span>
-                  {files &&
-                    files.map((file, index) => (
-                      <div key={index}>
-                        {file.type.includes("image/") ? (
-                          <img
-                            src={file.data}
-                            alt={file.name}
-                            style={{ width: "120px", height: "120px" }}
-                          />
-                        ) : (
-                          <a
-                            href={file.data}
-                            target={file.data}
-                            download
-                            rel="noopener noreferrer"
-                          >
-                            {file.name}
-                          </a>
-                        )}
-                      </div>
-                    ))}
-                </div>
-              </div>
-            ))
-          : messages.map(({ message, username, time, files }, index) => (
-              <div key={index} className={styles.message}>
-                <div key={index} className={styles.messageInner}>
-                  <span className={styles.messageSender}>
-                    {username} - {time}
-                  </span>
-                  <span className={styles.messageBody}>{message}</span>
-                  {files &&
-                    files.map((file, index) => (
-                      <div key={index}>
-                        {file.type.includes("image/") ? (
-                          <img
-                            src={file.data}
-                            alt={file.name}
-                            style={{ width: "120px", height: "120px" }}
-                          />
-                        ) : (
-                          <a
-                            href={file.data}
-                            target={file.data}
-                            download
-                            rel="noopener noreferrer"
-                          >
-                            {file.name}
-                          </a>
-                        )}
-                      </div>
-                    ))}
-                </div>
-              </div>
-            ))}
+        {messages.map(({ message, username, time, files }, index) => (
+          <div key={index} className={styles.message}>
+            <div key={index} className={styles.messageInner}>
+              <span className={styles.messageSender}>
+                {username} - {time}
+              </span>
+              <span className={styles.messageBody}>{message}</span>
+              {files &&
+                files.map((file, index) => (
+                  <div key={index}>
+                    {file.type.includes("image/") ? (
+                      <img
+                        src={file.data}
+                        alt={file.name}
+                        style={{ width: "120px", height: "120px" }}
+                      />
+                    ) : (
+                      <a
+                        href={file.data}
+                        target={file.data}
+                        download
+                        rel="noopener noreferrer"
+                      >
+                        {file.name}
+                      </a>
+                    )}
+                  </div>
+                ))}
+            </div>
+          </div>
+        ))}
         <div ref={messageEndRef} />
       </div>
       <div className={styles.messageBox}>

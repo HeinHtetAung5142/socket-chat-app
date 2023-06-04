@@ -69,6 +69,7 @@ function socket({ io }: { io: Server }) {
         name: roomName,
       };
 
+      console.log(roomId);
       socket.join(roomId);
 
       // broadcast an event saying there is a new room
@@ -116,6 +117,10 @@ function socket({ io }: { io: Server }) {
       socket.join(roomId);
 
       socket.emit(EVENTS.SERVER.JOINED_ROOM, roomId);
+    });
+
+    socket.on("client to server event", () => {
+      socket.emit("server to client event");
     });
   });
 }

@@ -1,0 +1,23 @@
+config:
+  target: "http://localhost:4000/"
+  phases:
+    - duration: 5
+      arrivalRate: 2
+  socketio:
+    auth: { "username": "user66" }
+
+scenarios:
+  - name: scenario 1
+    engine: socketio
+    flow:
+      - emit:
+          channel: "SEND_PRIVATE_MESSAGE"
+          data: { "message": "1", "to": "0bXjdbLbbHk7YhCxAAAB" }
+
+      - log: "Emitting captured values: {{ room }}"
+  - name: scenario 2
+    engine: socketio
+    flow:
+      - emit:
+          channel: "SEND_PRIVATE_MESSAGE"
+          data: { "message": "2", "to": "0bXjdbLbbHk7YhCxAAAB" }

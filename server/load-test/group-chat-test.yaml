@@ -1,0 +1,29 @@
+config:
+  target: "http://localhost:4000"
+  phases:
+    - duration: 30
+      arrivalRate: 10
+  socketio:
+    auth: { "username": "user--{{ $randomString() }}" }
+  processor: "./function.js"
+
+scenarios:
+  - name: Scenario 1
+    engine: socketio
+    flow:
+      - think: 1
+      - emit:
+          channel: "JOIN_ROOM"
+          data: "GvrW5aDSFMNzvcdOdROOs"
+      - function: "setMessage"
+      - emit:
+          channel: "SEND_ROOM_MESSAGE"
+          data:
+            {
+              "roomId": "GvrW5aDSFMNzvcdOdROOs",
+              "username": "user--{{ $randomString() }}",
+              "message": "{{ message}}",
+            }
+
+      # do nothing for 30 seconds then disconnect
+      - think: 15

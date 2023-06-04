@@ -29,7 +29,7 @@ export default function Home() {
     if (usernameRef)
       usernameRef.current.value = localStorage.getItem("username") || "";
     console.log(selectedUser);
-  }, []);
+  }, [selectedUser]);
 
   return (
     <div>

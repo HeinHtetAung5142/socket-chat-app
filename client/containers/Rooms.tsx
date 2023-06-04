@@ -8,7 +8,6 @@ function RoomsContainer({ setSelectedUser }) {
   const newRoomRef = useRef(null);
   const [usersData, setUsersData] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
-  const [privateRoomId, setPrivateRoomId] = useState<string | null>(null);
 
   useEffect(() => {
     // Update usersData state with the list of connected users
@@ -84,9 +83,6 @@ function RoomsContainer({ setSelectedUser }) {
     console.log(key);
 
     socket.emit(EVENTS.CLIENT.JOIN_ROOM, key);
-
-    // unset private room id
-    setPrivateRoomId(null);
   }
 
   function handleJoinPrivateRoom(user: any) {
@@ -100,9 +96,6 @@ function RoomsContainer({ setSelectedUser }) {
 
     // emit join room event for the selected user
     socket.emit(EVENTS.CLIENT.JOIN_ROOM, roomID);
-
-    // set the private room id
-    setPrivateRoomId(roomID);
   }
 
   return (

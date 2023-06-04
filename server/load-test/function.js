@@ -1,7 +1,6 @@
-'use strict';
-
 module.exports = {
-    setMessage: setMessage
+    setMessage: setMessage,
+    getRandomMessage: getRandomMessage
 };
 
 const MESSAGES = [
@@ -20,4 +19,9 @@ function setMessage(context, events, done) {
     const index = Math.floor(Math.random() * MESSAGES.length);
     context.vars.message = MESSAGES[index];
     return done();
+}
+
+function getRandomMessage() {
+    const index = Math.floor(Math.random() * MESSAGES.length);
+    return MESSAGES[index];
 }

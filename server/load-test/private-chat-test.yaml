@@ -4,7 +4,7 @@ config:
     - duration: 5
       arrivalRate: 2
   socketio:
-    auth: { "username": "user66" }
+    auth: { "username": "user--{{$randomString()}}" }
 
 scenarios:
   - name: scenario 1

@@ -25,7 +25,6 @@ function MessagesContainer({ selectedUser }) {
         username,
         files: selectedFiles,
       });
-      console.log("Sending private message to", selectedUser.userID);
     } else {
       socket.emit(EVENTS.CLIENT.SEND_ROOM_MESSAGE, {
         roomId,

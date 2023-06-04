@@ -61,7 +61,6 @@ function socket({ io }: { io: Server }) {
      * When a user creates a new room
      */
     socket.on(EVENTS.CLIENT.CREATE_ROOM, ({ roomName }) => {
-      console.log({ roomName });
       // create a roomId
       const roomId = nanoid();
       // add a new room to the rooms object
@@ -98,16 +97,23 @@ function socket({ io }: { io: Server }) {
       }
     );
 
-    socket.on(EVENTS.CLIENT.SEND_PRIVATE_MESSAGE, ({ message, to, files }) => {
-      const date = new Date();
+    /*
+     * When a user sends a private message
+     */
+    socket.on(
+      EVENTS.CLIENT.SEND_PRIVATE_MESSAGE,
+      ({ message, to, files, username }) => {
+        const date = new Date();
 
-      socket.to(to).emit(EVENTS.SERVER.PRIVATE_MESSAGE, {
-        message,
-        from: socket.id,
-        time: `${date.getHours()}:${date.getMinutes()}`,
-        files,
-      });
-    });
+        socket.to(to).emit(EVENTS.SERVER.PRIVATE_MESSAGE, {
+          message,
+          username,
+          from: socket.id,
+          time: `${date.getHours()}:${date.getMinutes()}`,
+          files,
+        });
+      }
+    );
 
     /*
      * When a user joins a room

@@ -92,11 +92,11 @@ function RoomsContainer({ setSelectedUser }) {
   function handleJoinPrivateRoom(user: any) {
     setSelectedUser(user);
     if (user.userID === roomId || user.userID === socket.id) return;
-
-    const roomID = `${socket.id}-${user.userID}`;
+    const userIDS = [socket.id, user.userID].sort();
+    const roomID = `${userIDS[0]}-${userIDS[1]}`;
 
     // create private room
-    rooms[roomID] = { name: `${currentUser.username}-${user.username}` };
+    rooms[roomID] = { name: user.username };
 
     // emit join room event for the selected user
     socket.emit(EVENTS.CLIENT.JOIN_ROOM, roomID);
@@ -135,6 +135,11 @@ function RoomsContainer({ setSelectedUser }) {
       <ul className={styles.roomList}>
         {usersData &&
           usersData.map((user) => {
+            for (const key in rooms) {
+              if (rooms[key].name === user.username) {
+                return null;
+              }
+            }
             return (
               <div key={user.userID}>
                 <button

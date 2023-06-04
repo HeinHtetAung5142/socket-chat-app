@@ -21,11 +21,12 @@ function MessagesContainer({ selectedUser }) {
 
     if (selectedUser) {
       socket.emit(EVENTS.CLIENT.SEND_PRIVATE_MESSAGE, {
-        recipient: selectedUser.userID,
+        to: selectedUser.userID,
         message,
         username,
         files: selectedFiles,
       });
+      console.log("Sending private message to", selectedUser.userID);
     } else {
       socket.emit(EVENTS.CLIENT.SEND_ROOM_MESSAGE, {
         roomId,
@@ -43,7 +44,7 @@ function MessagesContainer({ selectedUser }) {
           message,
           time: `${date.getHours()}:${date.getMinutes()}`,
           files: selectedFiles,
-          recipient: selectedUser,
+          to: selectedUser,
         },
       ]);
     }
@@ -89,7 +90,9 @@ function MessagesContainer({ selectedUser }) {
 
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    console.log(privateMessages);
+    console.log(messages);
+  }, [messages, privateMessages]);
 
   if (!roomId) {
     return <div />;

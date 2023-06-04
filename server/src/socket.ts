@@ -98,9 +98,12 @@ function socket({ io }: { io: Server }) {
       }
     );
 
+    /*
+     * When a user sends a private message
+     */
     socket.on(EVENTS.CLIENT.SEND_PRIVATE_MESSAGE, ({ message, to, files }) => {
       const date = new Date();
-
+      console.log({ message, to, files });
       socket.to(to).emit(EVENTS.SERVER.PRIVATE_MESSAGE, {
         message,
         from: socket.id,

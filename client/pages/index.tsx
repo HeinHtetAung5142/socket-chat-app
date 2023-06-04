@@ -26,7 +26,7 @@ export default function Home() {
   }
 
   useEffect(() => {
-    if (usernameRef)
+    if (usernameRef.current)
       usernameRef.current.value = localStorage.getItem("username") || "";
     console.log(selectedUser);
   }, [selectedUser]);

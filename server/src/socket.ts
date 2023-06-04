@@ -105,9 +105,10 @@ function socket({ io }: { io: Server }) {
       EVENTS.CLIENT.SEND_PRIVATE_MESSAGE,
       ({ message, to, files, username }) => {
         const date = new Date();
-        console.log({ message, to, files, username });
+
         socket.to(to).emit(EVENTS.SERVER.PRIVATE_MESSAGE, {
           message,
+          username,
           from: socket.id,
           time: `${date.getHours()}:${date.getMinutes()}`,
           files,

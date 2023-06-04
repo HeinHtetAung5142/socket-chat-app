@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "cockroachdb"
+  url      = env("DATABASE_URL")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model messages {
+  message_datetime DateTime? @db.Timestamp(6)
+  message_text     String?
+  room_id          BigInt?
+  message_user_id  BigInt?
+  messages_file    String?
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model rooms {
+  room_id BigInt
+  user_1  BigInt
+  user_2  BigInt
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model user_table {
+  name String
+  id   BigInt
+
+  @@ignore
+}

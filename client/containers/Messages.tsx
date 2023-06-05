@@ -67,6 +67,9 @@ function MessagesContainer({ selectedUser }) {
 
         if (fileArray.length === files.length) {
           setSelectedFiles(fileArray);
+
+          const fileNames = fileArray.map((file) => file.name).join(", ");
+          newMessageRef.current.value += " " + fileNames;
         }
       };
 

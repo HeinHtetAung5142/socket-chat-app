@@ -1,23 +1,33 @@
+# configuration of the script
 config:
+  # system to test
   target: "http://localhost:4000/"
+  # define how VU(virtual users) are generated
   phases:
-    - duration: 10
+    - duration: 15
       arrivalRate: 2
   socketio:
     auth: { "username": "user--{{$randomString()}}" }
+  variables:
+    userId: ""
+  processor: "./function.js"
 
+# define VU(virtual users) behaviour
 scenarios:
   - name: scenario 1
     engine: socketio
+    weight: 2
+    # scenario weight
     flow:
       - emit:
           channel: "SEND_PRIVATE_MESSAGE"
-          data: { "message": "1", "to": "Yfjufa1mbgixTBjLAAAj" }
+          data: { "message": "1", "to": "{{ userId}}" }
 
-      - log: "Emitting captured values: {{ room }}"
+      - log: "Scenario 1"
   - name: scenario 2
     engine: socketio
     flow:
       - emit:
           channel: "SEND_PRIVATE_MESSAGE"
-          data: { "message": "2", "to": "Yfjufa1mbgixTBjLAAAj" }
+          data: { "message": "2", "to": "{{ userId}}" }
+      - log: "Scenario 2"

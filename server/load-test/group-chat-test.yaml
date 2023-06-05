@@ -1,29 +1,40 @@
+# configuration of the script
 config:
+  # system to test
   target: "http://localhost:4000"
+  # define how VU(virtual users) are generated
   phases:
-    - duration: 30
+    - name: Phase 1
+      duration: 10
       arrivalRate: 10
+    - name: Phase 2
+      duration: 10
+      arrivalRate: 5
+      rampTo: 30
   socketio:
     auth: { "username": "user--{{ $randomString() }}" }
+  variables:
+    roomId: "vW3qOabHdKGbnk6jS7RxU"
   processor: "./function.js"
 
+# define VU(virtual users) behaviour
 scenarios:
   - name: Scenario 1
     engine: socketio
     flow:
+      #
       - think: 1
       - emit:
           channel: "JOIN_ROOM"
-          data: "GvrW5aDSFMNzvcdOdROOs"
+          data: "{{ roomId }}"
       - function: "setMessage"
       - emit:
           channel: "SEND_ROOM_MESSAGE"
           data:
             {
-              "roomId": "GvrW5aDSFMNzvcdOdROOs",
+              "roomId": "{{roomId}}",
               "username": "user--{{ $randomString() }}",
               "message": "{{ message}}",
             }
-
-      # do nothing for 30 seconds then disconnect
-      - think: 15
+      # do nothing for 10s then disconnects
+      - think: 10

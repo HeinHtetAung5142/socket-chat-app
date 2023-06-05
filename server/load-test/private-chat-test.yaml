@@ -9,7 +9,7 @@ config:
   socketio:
     auth: { "username": "user--{{$randomString()}}" }
   variables:
-    userId: ""
+    userId: "MAPxZR_ynzhy7dXSAAAD"
   processor: "./function.js"
 
 # define VU(virtual users) behaviour

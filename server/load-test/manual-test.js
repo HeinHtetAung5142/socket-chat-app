@@ -3,14 +3,14 @@ const { getRandomMessage } = require("./function.js");
 
 const URL = process.env.URL || "http://localhost:4000";
 const MAX_CLIENTS = 25;
-const CLIENT_CREATION_INTERVAL_IN_MS = 100;
-const EMIT_INTERVAL_IN_MS = 10000;
+const CLIENT_CREATION_INTERVAL_IN_MS = 500;
+const EMIT_INTERVAL_IN_MS = 3000;
 const ROOM_INTERVAL = [0, 5, 15]
 
 let clientCount = 0;
 let disconnectedClient = 0;
 let roomIndex = 0;
-let messagesSent = 0;
+let messagesReceived = 0;
 let roomName = '';
 let roomsObj;
 let currRoom;
@@ -44,11 +44,15 @@ const createClient = () => {
 
     setInterval(() => {
         socket.emit("SEND_ROOM_MESSAGE", { roomId: currRoom, message: getRandomMessage(), username: `user`, file: null });
-        messagesSent++;
     }, EMIT_INTERVAL_IN_MS);
+
+    socket.on("ROOM_MESSAGE", () => {
+        messagesReceived++;
+    })
 
     socket.on("disconnect", (reason) => {
         console.log(`disconnect due to ${reason}`);
+        disconnectedClient++;
     });
 
     if (++clientCount < MAX_CLIENTS) {
@@ -61,7 +65,7 @@ createClient();
 
 const printReport = () => {
     console.log(
-        `client count: ${clientCount} ; Rooms: ${roomIndex + 1}; disconnected: ${disconnectedClient}; messagesSent: ${messagesSent}`
+        `client count: ${clientCount} ; Rooms: ${roomIndex + 1}; disconnected: ${disconnectedClient}; messagesReceived: ${messagesReceived}`
     );
 };
 

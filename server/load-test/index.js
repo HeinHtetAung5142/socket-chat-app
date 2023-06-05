@@ -1,7 +1,7 @@
 const { io } = require("socket.io-client");
 
 const URL = process.env.URL || "http://localhost:4000";
-const MAX_CLIENTS = 1000;
+const MAX_CLIENTS = 300;
 const CLIENT_CREATION_INTERVAL_IN_MS = 10;
 const EMIT_INTERVAL_IN_MS = 1000;
 
@@ -26,7 +26,6 @@ const createClient = () => {
     });
 
     socket.on("disconnect", (reason) => {
-        console.log(`disconnect due to ${reason}`);
         disconnectedClient++;
     });
 

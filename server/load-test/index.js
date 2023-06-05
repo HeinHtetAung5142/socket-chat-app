@@ -1,7 +1,7 @@
 const { io } = require("socket.io-client");
 
 const URL = process.env.URL || "http://localhost:4000";
-const MAX_CLIENTS = 300;
+const MAX_CLIENTS = 600;
 const CLIENT_CREATION_INTERVAL_IN_MS = 10;
 const EMIT_INTERVAL_IN_MS = 1000;
 
@@ -44,7 +44,7 @@ const printReport = () => {
     ).toFixed(2);
 
     console.log(
-        `client count: ${clientCount} ; average packets received per second: ${packetsPerSeconds}; disconnected: ${disconnectedClient}`
+        `client count: ${clientCount - disconnectedClient} ; average packets received per second: ${packetsPerSeconds}; disconnected: ${disconnectedClient}`
     );
 
     packetsSinceLastReport = 0;
